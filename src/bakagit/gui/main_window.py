@@ -171,19 +171,6 @@ class MainWindow(QMainWindow):
         # 设置菜单（独立出来）
         settings_menu = menubar.addMenu('设置')
         
-        # 外观设置
-        appearance_action = QAction('外观设置', self)
-        appearance_action.setShortcut('Ctrl+T')
-        appearance_action.triggered.connect(self.open_appearance_settings)
-        settings_menu.addAction(appearance_action)
-        
-        # 语言设置
-        language_action = QAction('语言设置', self)
-        language_action.triggered.connect(self.open_language_settings)
-        settings_menu.addAction(language_action)
-        
-        settings_menu.addSeparator()
-        
         # 完整设置
         full_settings_action = QAction('完整设置', self)
         full_settings_action.triggered.connect(self.open_settings)
@@ -287,12 +274,6 @@ class MainWindow(QMainWindow):
         refresh_btn.setToolTip('刷新仓库状态 (F5)')
         refresh_btn.clicked.connect(self.refresh_repository)
         self.toolbar.addWidget(refresh_btn)
-        
-        # 外观设置按钮（单独提取）
-        appearance_btn = QPushButton('外观')
-        appearance_btn.setToolTip('快速切换主题和外观设置')
-        appearance_btn.clicked.connect(self.open_appearance_settings)
-        self.toolbar.addWidget(appearance_btn)
         
         # 设置按钮
         settings_btn = QPushButton('设置')
@@ -1136,48 +1117,6 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.warning(self, "警告", f"应用设置时出错: {str(e)}")
     
-    def open_appearance_settings(self):
-        """打开快速外观设置对话框"""
-        from .dialogs.appearance_dialog import QuickAppearanceDialog
-        
-        try:
-            dialog = QuickAppearanceDialog(self)
-            dialog.theme_changed.connect(self.preview_theme)
-            dialog.settings_changed.connect(self.apply_appearance_settings)
-            
-            if dialog.exec() == dialog.DialogCode.Accepted:
-                self.statusBar().showMessage("外观设置已保存", 3000)
-        except Exception as e:
-            QMessageBox.critical(self, "错误", f"打开外观设置失败: {str(e)}")
-    
-    def preview_theme(self, theme_name):
-        """预览主题更改"""
-        # 这里可以添加实时主题预览逻辑
-        self.statusBar().showMessage(f"预览主题: {theme_name}", 2000)
-    
-    def apply_appearance_settings(self):
-        """应用外观设置"""
-        try:
-            # 重新加载配置
-            config = self.config_manager.get_all_settings()
-            
-            # 应用工具栏显示设置
-            show_toolbar = config.get('show_toolbar', True)
-            if hasattr(self, 'toolbar'):
-                if hasattr(self.toolbar, 'setVisible'):
-                    self.toolbar.setVisible(show_toolbar)
-            
-            # 应用状态栏显示设置
-            show_status_bar = config.get('show_status_bar', True)
-            self.statusBar().setVisible(show_status_bar)
-            
-            # 应用其他外观设置...
-            if show_status_bar:
-                self.statusBar().showMessage("外观设置已应用", 3000)
-            
-        except Exception as e:
-            QMessageBox.warning(self, "警告", f"应用外观设置时出错: {str(e)}")
-    
     def stage_selected_files(self):
         """暂存选中的文件"""
         try:
@@ -1423,32 +1362,6 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 QMessageBox.critical(self, "错误", f"仓库清理失败: {str(e)}")
     
-    def open_language_settings(self):
-        """打开语言设置对话框"""
-        from .dialogs.language_dialog import LanguageDialog
-        
-        try:
-            dialog = LanguageDialog(self)
-            dialog.language_changed.connect(self.apply_language_change)
-            
-            if dialog.exec() == dialog.DialogCode.Accepted:
-                self.statusBar().showMessage("语言设置已保存", 3000)
-        except Exception as e:
-            QMessageBox.critical(self, "错误", f"打开语言设置失败: {str(e)}")
-    
-    def apply_language_change(self, language_code):
-        """应用语言更改"""
-        try:
-            self.config_manager.set('language', language_code)
-            self.config_manager.save_config()
-            
-            QMessageBox.information(
-                self, "语言已更改", 
-                "语言设置已保存，重启应用后生效。\nLanguage setting saved, restart app to take effect."
-            )
-        except Exception as e:
-            QMessageBox.warning(self, "警告", f"应用语言设置时出错: {str(e)}")
-    
     def reset_all_settings(self):
         """重置所有设置"""
         reply = QMessageBox.question(
@@ -1490,7 +1403,6 @@ class MainWindow(QMainWindow):
         <h3>⌨️ 快捷键</h3>
         <ul>
         <li><b>F5</b>：刷新仓库状态</li>
-        <li><b>Ctrl+T</b>：快速外观设置</li>
         <li><b>Ctrl+A</b>：全选文件</li>
         <li><b>Ctrl+Q</b>：退出应用</li>
         </ul>
@@ -1498,7 +1410,6 @@ class MainWindow(QMainWindow):
         <h3>💡 小贴士</h3>
         <ul>
         <li>每个按钮都有工具提示，鼠标悬停查看详细说明</li>
-        <li>使用"外观"按钮快速切换深色/浅色主题</li>
         <li>在设置中可以配置Git用户信息和其他选项</li>
         </ul>
         """

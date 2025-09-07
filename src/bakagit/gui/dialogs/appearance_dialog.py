@@ -27,72 +27,93 @@ class QuickAppearanceDialog(QDialog):
     def init_ui(self):
         """初始化界面"""
         self.setWindowTitle("快速外观设置")
-        self.setFixedSize(400, 350)
+        self.setFixedSize(500, 450)  # 增加窗口大小
         self.setModal(True)
         
         layout = QVBoxLayout(self)
+        layout.setSpacing(15)  # 增加组件间距
+        layout.setContentsMargins(20, 20, 20, 20)  # 增加边距
         
         # 主题选择组
-        theme_group = QGroupBox("主题选择")
+        theme_group = QGroupBox("🎨 主题选择")
+        theme_group.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 10px; }")
         theme_layout = QVBoxLayout(theme_group)
+        theme_layout.setSpacing(8)  # 增加组内间距
         
         self.theme_group = QButtonGroup()
         
-        self.dark_radio = QRadioButton("深色主题")
+        self.dark_radio = QRadioButton("🌙 深色主题")
         self.dark_radio.setChecked(True)
+        self.dark_radio.setStyleSheet("QRadioButton { padding: 5px; }")
         self.theme_group.addButton(self.dark_radio, 0)
         theme_layout.addWidget(self.dark_radio)
         
-        self.light_radio = QRadioButton("浅色主题")
+        self.light_radio = QRadioButton("☀️ 浅色主题")
+        self.light_radio.setStyleSheet("QRadioButton { padding: 5px; }")
         self.theme_group.addButton(self.light_radio, 1)
         theme_layout.addWidget(self.light_radio)
         
-        self.system_radio = QRadioButton("跟随系统")
+        self.system_radio = QRadioButton("🖥️ 跟随系统")
+        self.system_radio.setStyleSheet("QRadioButton { padding: 5px; }")
         self.theme_group.addButton(self.system_radio, 2)
         theme_layout.addWidget(self.system_radio)
         
         layout.addWidget(theme_group)
         
         # 字体设置组
-        font_group = QGroupBox("字体设置")
+        font_group = QGroupBox("🔤 字体设置")
+        font_group.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 10px; }")
         font_layout = QFormLayout(font_group)
+        font_layout.setVerticalSpacing(12)  # 增加表单行间距
+        font_layout.setHorizontalSpacing(15)  # 增加水平间距
         
         self.font_family_combo = QComboBox()
         self.font_family_combo.addItems([
             "Microsoft YaHei", "SimSun", "Arial", 
             "Consolas", "Source Code Pro", "JetBrains Mono"
         ])
+        self.font_family_combo.setMinimumHeight(30)  # 增加高度
         font_layout.addRow("字体族:", self.font_family_combo)
         
         self.font_size_spin = QSpinBox()
         self.font_size_spin.setRange(8, 24)
         self.font_size_spin.setValue(10)
+        self.font_size_spin.setMinimumHeight(30)  # 增加高度
         font_layout.addRow("字体大小:", self.font_size_spin)
         
         layout.addWidget(font_group)
         
         # 界面选项组
-        ui_group = QGroupBox("界面选项")
+        ui_group = QGroupBox("⚙️ 界面选项")
+        ui_group.setStyleSheet("QGroupBox { font-weight: bold; padding-top: 10px; }")
         ui_layout = QFormLayout(ui_group)
+        ui_layout.setVerticalSpacing(12)  # 增加表单行间距
+        ui_layout.setHorizontalSpacing(15)  # 增加水平间距
         
         self.show_toolbar = QCheckBox("显示工具栏")
         self.show_toolbar.setChecked(True)
+        self.show_toolbar.setStyleSheet("QCheckBox { padding: 3px; }")
         ui_layout.addRow(self.show_toolbar)
         
         self.show_status_bar = QCheckBox("显示状态栏")
         self.show_status_bar.setChecked(True)
+        self.show_status_bar.setStyleSheet("QCheckBox { padding: 3px; }")
         ui_layout.addRow(self.show_status_bar)
         
         self.compact_mode = QCheckBox("紧凑模式")
+        self.compact_mode.setStyleSheet("QCheckBox { padding: 3px; }")
         ui_layout.addRow(self.compact_mode)
         
         # 刷新间隔滑块
         self.refresh_slider = QSlider(Qt.Orientation.Horizontal)
         self.refresh_slider.setRange(1, 30)
         self.refresh_slider.setValue(5)
+        self.refresh_slider.setMinimumHeight(25)  # 增加滑块高度
         self.refresh_slider.valueChanged.connect(self.update_refresh_label)
         
         self.refresh_label = QLabel("5 秒")
+        self.refresh_label.setMinimumWidth(50)
+        self.refresh_label.setStyleSheet("QLabel { font-weight: bold; color: #2196F3; }")
         refresh_layout = QHBoxLayout()
         refresh_layout.addWidget(self.refresh_slider)
         refresh_layout.addWidget(self.refresh_label)
@@ -103,30 +124,72 @@ class QuickAppearanceDialog(QDialog):
         
         # 预览提示
         preview_label = QLabel("💡 提示：更改会立即预览，点击确定保存设置")
-        preview_label.setStyleSheet("QLabel { color: #888; font-style: italic; }")
+        preview_label.setStyleSheet("""
+            QLabel { 
+                color: #666; 
+                font-style: italic; 
+                background-color: #f0f8ff;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                padding: 8px;
+                margin: 5px 0;
+            }
+        """)
         layout.addWidget(preview_label)
         
         # 按钮布局
         button_layout = QHBoxLayout()
+        button_layout.setSpacing(10)  # 增加按钮间距
         
         # 重置按钮
-        reset_btn = QPushButton("重置为默认")
+        reset_btn = QPushButton("🔄 重置为默认")
+        reset_btn.setMinimumHeight(35)  # 增加按钮高度
         reset_btn.clicked.connect(self.reset_to_defaults)
         button_layout.addWidget(reset_btn)
         
         button_layout.addStretch()
         
         # 预览按钮
-        preview_btn = QPushButton("预览")
+        preview_btn = QPushButton("👁️ 预览")
+        preview_btn.setMinimumHeight(35)  # 增加按钮高度
         preview_btn.clicked.connect(self.preview_changes)
         button_layout.addWidget(preview_btn)
         
         # 确定/取消按钮
-        ok_btn = QPushButton("确定")
+        ok_btn = QPushButton("✅ 确定")
+        ok_btn.setMinimumHeight(35)  # 增加按钮高度
+        ok_btn.setStyleSheet("""
+            QPushButton {
+                background-color: #2196F3;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                font-weight: bold;
+                padding: 5px 15px;
+            }
+            QPushButton:hover {
+                background-color: #1976D2;
+            }
+            QPushButton:pressed {
+                background-color: #0D47A1;
+            }
+        """)
         ok_btn.clicked.connect(self.accept_changes)
         button_layout.addWidget(ok_btn)
         
-        cancel_btn = QPushButton("取消")
+        cancel_btn = QPushButton("❌ 取消")
+        cancel_btn.setMinimumHeight(35)  # 增加按钮高度
+        cancel_btn.setStyleSheet("""
+            QPushButton {
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                padding: 5px 15px;
+                background-color: white;
+            }
+            QPushButton:hover {
+                background-color: #f5f5f5;
+            }
+        """)
         cancel_btn.clicked.connect(self.reject)
         button_layout.addWidget(cancel_btn)
         

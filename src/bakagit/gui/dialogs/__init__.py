@@ -6,7 +6,5 @@
 
 from .clone_dialog import CloneRepositoryDialog
 from .settings_dialog import SettingsDialog  
-from .appearance_dialog import QuickAppearanceDialog
-from .language_dialog import LanguageDialog
 
-__all__ = ['CloneRepositoryDialog', 'SettingsDialog', 'QuickAppearanceDialog', 'LanguageDialog']
+__all__ = ['CloneRepositoryDialog', 'SettingsDialog']

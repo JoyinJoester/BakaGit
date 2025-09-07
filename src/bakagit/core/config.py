@@ -38,7 +38,6 @@ class ConfigManager:
         self.default_config = {
             'ui': {
                 'theme': 'dark',  # 主题: light, dark
-                'language': 'zh_CN',  # 语言: zh_CN, en_US
                 'font_size': 13,
                 'window_size': [1200, 800],
                 'window_position': [100, 100],
