@@ -16,8 +16,14 @@ class LanguageDialog(QDialog):
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.config_manager = parent.config_manager if parent else None
-        self.current_language = self.config_manager.get('language', 'zh_CN') if self.config_manager else 'zh_CN'
+        # 导入ConfigManager以防parent没有config_manager
+        if parent and hasattr(parent, 'config_manager'):
+            self.config_manager = parent.config_manager
+        else:
+            from ...core.config import ConfigManager
+            self.config_manager = ConfigManager()
+        
+        self.current_language = self.config_manager.get('language', 'zh_CN')
         
         self.init_ui()
         self.load_current_settings()

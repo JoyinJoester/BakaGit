@@ -527,9 +527,15 @@ class MainWindow(QMainWindow):
                 self.config_manager.add_recent_repository(repo_path)
                 self.load_recent_repositories()
                 self.refresh_repository()
-                self.status_label.setText(f'已打开: {repo_path}')
+                self.statusBar().showMessage(f'已打开仓库: {repo_path}', 5000)
             else:
-                QMessageBox.warning(self, '错误', '加载Git仓库失败')
+                QMessageBox.warning(
+                    self, '错误', 
+                    f'加载Git仓库失败: {repo_path}\n\n可能的原因：\n'
+                    '• 目录不存在或无权限访问\n'
+                    '• .git文件夹损坏\n'
+                    '• 不是有效的Git仓库'
+                )
     
     def clone_repository(self):
         """克隆仓库"""
@@ -554,6 +560,12 @@ class MainWindow(QMainWindow):
     def refresh_repository(self):
         """刷新仓库状态"""
         if not self.git_manager.repo:
+            # 当没有仓库时，清空显示
+            self.branch_label.setText('分支: 未打开仓库')
+            self.working_files.clear()
+            self.staged_files.clear()
+            self.commit_list.clear()
+            self.statusBar().showMessage("请打开一个Git仓库", 5000)
             return
         
         # 更新状态信息
@@ -568,6 +580,9 @@ class MainWindow(QMainWindow):
         
         # 更新提交历史
         self.update_commit_history()
+        
+        # 显示成功消息
+        self.statusBar().showMessage("仓库状态已更新", 3000)
         
         # 更新分支列表
         self.update_branch_list()
