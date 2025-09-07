@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bakagit"
+version = "0.1.0"
+description = "笨蛋都会用的Git图形化工具"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "BakaGit Team", email = "bakagit@example.com"}
+]
+keywords = ["git", "gui", "version-control", "简单", "图形化"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Version Control :: Git",
+    "Topic :: Desktop Environment",
+]
+
+dependencies = [
+    "PyQt6>=6.5.0",
+    "GitPython>=3.1.40",
+    "PyYAML>=6.0.1",
+    "psutil>=5.9.0",
+    "qtawesome>=1.2.3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-qt>=4.2.0",
+    "black>=23.7.0",
+    "flake8>=6.0.0",
+]
+build = [
+    "PyInstaller>=5.13.0",
+    "setuptools>=68.0.0",
+    "wheel>=0.41.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/bakagit/bakagit"
+Repository = "https://github.com/bakagit/bakagit.git"
+Issues = "https://github.com/bakagit/bakagit/issues"
+
+[project.scripts]
+bakagit = "bakagit.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+bakagit = ["resources/**/*"]
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.flake8]
+max-line-length = 88
+exclude = [
+    ".git",
+    "__pycache__",
+    "build",
+    "dist",
+    ".venv",
+]
+ignore = ["E203", "W503"]
