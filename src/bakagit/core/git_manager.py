@@ -6,6 +6,7 @@ Git操作管理器
 
 import os
 import git
+import subprocess
 from typing import List, Optional, Dict, Any
 from pathlib import Path
 from git.exc import GitError, InvalidGitRepositoryError, NoSuchPathError
@@ -175,6 +176,23 @@ class GitManager:
         """
         return self.add_files([file_path])
     
+    def stage_all(self) -> bool:
+        """
+        暂存所有更改
+        
+        Returns:
+            bool: 是否成功暂存
+        """
+        if not self.repo:
+            return False
+        
+        try:
+            self.repo.git.add('.')
+            return True
+        except Exception as e:
+            print(f"暂存所有文件失败: {e}")
+            return False
+    
     def commit(self, message: str, author_name: Optional[str] = None, 
                author_email: Optional[str] = None) -> bool:
         """
@@ -296,6 +314,162 @@ class GitManager:
             print(f"切换分支失败: {e}")
             return False
     
+    def get_remotes(self) -> List[str]:
+        """获取远程仓库列表"""
+        if not self.repo:
+            return []
+        
+        try:
+            remotes = [remote.name for remote in self.repo.remotes]
+            return remotes
+        except Exception as e:
+            print(f"获取远程仓库失败: {e}")
+            return []
+    
+    def push_to_remote(self, remote_name: str = 'origin', branch_name: Optional[str] = None) -> bool:
+        """推送到远程仓库"""
+        if not self.repo:
+            return False
+        
+        try:
+            if branch_name is None:
+                # 推送当前分支
+                branch_name = self.repo.active_branch.name
+            
+            remote = self.repo.remote(remote_name)
+            remote.push(branch_name)
+            return True
+        except Exception as e:
+            print(f"推送失败: {e}")
+            return False
+    
+    def pull_from_remote(self, remote_name: str = 'origin', branch_name: Optional[str] = None) -> bool:
+        """从远程仓库拉取"""
+        if not self.repo:
+            return False
+        
+        try:
+            if branch_name is None:
+                # 拉取当前分支
+                branch_name = self.repo.active_branch.name
+            
+            remote = self.repo.remote(remote_name)
+            remote.pull(branch_name)
+            return True
+        except Exception as e:
+            print(f"拉取失败: {e}")
+            return False
+    
+    def fetch_from_remote(self, remote_name: str = 'origin') -> bool:
+        """从远程仓库获取"""
+        if not self.repo:
+            return False
+        
+        try:
+            remote = self.repo.remote(remote_name)
+            remote.fetch()
+            return True
+        except Exception as e:
+            print(f"获取失败: {e}")
+            return False
+    
+    def add_remote(self, name: str, url: str) -> bool:
+        """添加远程仓库"""
+        if not self.repo:
+            return False
+        
+        try:
+            self.repo.create_remote(name, url)
+            return True
+        except Exception as e:
+            print(f"添加远程仓库失败: {e}")
+            return False
+    
+    def remove_remote(self, name: str) -> bool:
+        """删除远程仓库"""
+        if not self.repo:
+            return False
+        
+        try:
+            self.repo.delete_remote(name)
+            return True
+        except Exception as e:
+            print(f"删除远程仓库失败: {e}")
+            return False
+    
+    def get_tags(self) -> List[str]:
+        """获取所有标签列表"""
+        if not self.repo:
+            return []
+        
+        try:
+            tags = [tag.name for tag in self.repo.tags]
+            return sorted(tags)
+        except Exception as e:
+            print(f"获取标签列表失败: {e}")
+            return []
+    
+    def create_tag(self, tag_name: str, message: Optional[str] = None, commit_hash: Optional[str] = None) -> bool:
+        """创建标签"""
+        if not self.repo:
+            return False
+        
+        try:
+            if commit_hash:
+                commit = self.repo.commit(commit_hash)
+            else:
+                commit = self.repo.head.commit
+            
+            if message:
+                # 创建带注释的标签
+                self.repo.create_tag(tag_name, ref=commit, message=message)
+            else:
+                # 创建轻量级标签
+                self.repo.create_tag(tag_name, ref=commit)
+            
+            return True
+        except Exception as e:
+            print(f"创建标签失败: {e}")
+            return False
+    
+    def delete_tag(self, tag_name: str) -> bool:
+        """删除标签"""
+        if not self.repo:
+            return False
+        
+        try:
+            self.repo.delete_tag(tag_name)
+            return True
+        except Exception as e:
+            print(f"删除标签失败: {e}")
+            return False
+    
+    def push_tag(self, tag_name: str, remote_name: str = 'origin') -> bool:
+        """推送标签到远程仓库"""
+        if not self.repo:
+            return False
+        
+        try:
+            remote = self.repo.remote(remote_name)
+            remote.push(tag_name)
+            return True
+        except Exception as e:
+            print(f"推送标签失败: {e}")
+            return False
+    
+    def push_all_tags(self, remote_name: str = 'origin') -> bool:
+        """推送所有标签到远程仓库"""
+        if not self.repo:
+            return False
+        
+        try:
+            remote = self.repo.remote(remote_name)
+            remote.push(tags=True)
+            return True
+        except Exception as e:
+            print(f"推送所有标签失败: {e}")
+            return False
+
     def get_commit_history(self, max_count: int = 50) -> List[Dict[str, Any]]:
         """
         获取提交历史
@@ -411,6 +585,117 @@ class GitManager:
             print(f"设置Git配置失败: {e}")
             return False
     
+    def get_git_config(self, key: str, global_config: bool = False) -> Optional[str]:
+        """获取Git配置值"""
+        try:
+            if global_config:
+                # 获取全局配置
+                result = subprocess.run(['git', 'config', '--global', key], 
+                                      capture_output=True, text=True, check=False)
+            else:
+                # 获取仓库配置
+                if not self.repo:
+                    return None
+                result = subprocess.run(['git', 'config', key], 
+                                      cwd=self.repo.working_dir,
+                                      capture_output=True, text=True, check=False)
+            
+            if result.returncode == 0:
+                return result.stdout.strip()
+            return None
+        except Exception as e:
+            print(f"获取Git配置失败: {e}")
+            return None
+    
+    def set_git_config(self, key: str, value: str, global_config: bool = False) -> bool:
+        """设置Git配置值"""
+        try:
+            if global_config:
+                # 设置全局配置
+                result = subprocess.run(['git', 'config', '--global', key, value], 
+                                      capture_output=True, text=True, check=False)
+            else:
+                # 设置仓库配置
+                if not self.repo:
+                    return False
+                result = subprocess.run(['git', 'config', key, value], 
+                                      cwd=self.repo.working_dir,
+                                      capture_output=True, text=True, check=False)
+            
+            return result.returncode == 0
+        except Exception as e:
+            print(f"设置Git配置失败: {e}")
+            return False
+    
+    def get_user_info(self) -> Dict[str, Optional[str]]:
+        """获取用户信息"""
+        return {
+            'name': self.get_git_config('user.name', global_config=True),
+            'email': self.get_git_config('user.email', global_config=True),
+            'local_name': self.get_git_config('user.name', global_config=False),
+            'local_email': self.get_git_config('user.email', global_config=False)
+        }
+    
+    def set_user_info(self, name: str, email: str, global_config: bool = True) -> bool:
+        """设置用户信息"""
+        name_success = self.set_git_config('user.name', name, global_config)
+        email_success = self.set_git_config('user.email', email, global_config)
+        return name_success and email_success
+    
+    def init_repository(self, path: str, bare: bool = False) -> bool:
+        """初始化Git仓库"""
+        try:
+            import os
+            if not os.path.exists(path):
+                os.makedirs(path)
+            
+            cmd = ['git', 'init']
+            if bare:
+                cmd.append('--bare')
+            
+            result = subprocess.run(cmd, cwd=path, capture_output=True, text=True, check=False)
+            
+            if result.returncode == 0:
+                # 重新加载仓库
+                self.load_repository(path)
+                return True
+            else:
+                print(f"初始化仓库失败: {result.stderr}")
+                return False
+        except Exception as e:
+            print(f"初始化仓库失败: {e}")
+            return False
+    
+    def clone_repository_with_progress(self, url: str, path: str, progress_callback=None) -> bool:
+        """克隆仓库（带进度回调）"""
+        try:
+            import os
+            
+            # 确保父目录存在
+            parent_dir = os.path.dirname(path)
+            if not os.path.exists(parent_dir):
+                os.makedirs(parent_dir)
+            
+            if progress_callback:
+                progress_callback("正在克隆仓库...")
+            
+            # 使用GitPython的克隆功能
+            from git import Repo
+            repo = Repo.clone_from(url, path)
+            
+            if progress_callback:
+                progress_callback("克隆完成")
+            
+            # 加载新克隆的仓库
+            self.load_repository(path)
+            return True
+            
+        except Exception as e:
+            if progress_callback:
+                progress_callback(f"克隆失败: {str(e)}")
+            print(f"克隆仓库失败: {e}")
+            return False
+
     def get_branches(self) -> List[str]:
         """
         获取所有分支列表
@@ -441,6 +726,53 @@ class GitManager:
             print(f"获取分支列表失败: {e}")
             return []
     
+    def push_to_remote(self, remote_name: str = 'origin', branch_name: Optional[str] = None) -> bool:
+        """推送到远程仓库"""
+        if not self.repo:
+            return False
+        
+        try:
+            if branch_name is None:
+                # 推送当前分支
+                branch_name = self.repo.active_branch.name
+            
+            remote = self.repo.remote(remote_name)
+            remote.push(branch_name)
+            return True
+        except Exception as e:
+            print(f"推送失败: {e}")
+            return False
+    
+    def pull_from_remote(self, remote_name: str = 'origin', branch_name: Optional[str] = None) -> bool:
+        """从远程仓库拉取"""
+        if not self.repo:
+            return False
+        
+        try:
+            if branch_name is None:
+                # 拉取当前分支
+                branch_name = self.repo.active_branch.name
+            
+            remote = self.repo.remote(remote_name)
+            remote.pull(branch_name)
+            return True
+        except Exception as e:
+            print(f"拉取失败: {e}")
+            return False
+    
+    def fetch_from_remote(self, remote_name: str = 'origin') -> bool:
+        """从远程仓库获取"""
+        if not self.repo:
+            return False
+        
+        try:
+            remote = self.repo.remote(remote_name)
+            remote.fetch()
+            return True
+        except Exception as e:
+            print(f"获取失败: {e}")
+            return False
+    
     def get_current_branch(self) -> str:
         """
         获取当前分支名称
@@ -456,32 +788,6 @@ class GitManager:
         except Exception as e:
             print(f"获取当前分支失败: {e}")
             return ""
-    
-    def create_branch(self, branch_name: str) -> bool:
-        """
-        创建新分支
-        
-        Args:
-            branch_name: 新分支名称
-            
-        Returns:
-            bool: 是否成功创建
-        """
-        if not self.repo:
-            return False
-        
-        try:
-            # 检查分支是否已存在
-            if branch_name in [branch.name for branch in self.repo.branches]:
-                print(f"分支 '{branch_name}' 已存在")
-                return False
-            
-            # 创建新分支
-            new_branch = self.repo.create_head(branch_name)
-            return True
-        except Exception as e:
-            print(f"创建分支失败: {e}")
-            return False
     
     def checkout_branch(self, branch_name: str) -> bool:
         """

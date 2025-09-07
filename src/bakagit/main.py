@@ -213,6 +213,17 @@ class BakaGitApplication:
             color: #ffffff;
             border-top: 1px solid #404040;
             padding: 5px;
+            font-size: 13px;
+        }
+        
+        QStatusBar QLabel {
+            background-color: #2d2d2d;
+            color: #ffffff;
+            border: 1px solid #404040;
+            border-radius: 4px;
+            padding: 4px 8px;
+            margin: 2px;
+            font-size: 12px;
         }
         
         QLabel {
