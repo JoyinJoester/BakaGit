@@ -404,6 +404,10 @@ class SettingsDialog(QDialog):
             # 保存应用设置
             for key, value in settings.items():
                 self.config_manager.set_setting(key, value)
+            
+            # 保存配置到文件
+            if not self.config_manager.save_config():
+                raise Exception("配置文件保存失败")
                 
             # 保存Git用户信息
             if self.git_user_name.text().strip():

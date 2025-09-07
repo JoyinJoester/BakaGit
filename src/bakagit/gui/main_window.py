@@ -43,6 +43,9 @@ class MainWindow(QMainWindow):
         
         # 检查Git环境
         self.check_git_environment()
+        
+        # 初始化界面状态
+        self.refresh_repository()
     
     def init_ui(self):
         """初始化用户界面"""

@@ -98,15 +98,47 @@ class GitManager:
             return {}
         
         try:
-            return {
+            # 获取基本状态信息
+            status = {
                 'is_dirty': self.repo.is_dirty(),
                 'untracked_files': self.repo.untracked_files,
                 'modified_files': [item.a_path for item in self.repo.index.diff(None)],
-                'staged_files': [item.a_path for item in self.repo.index.diff("HEAD")],
-                'current_branch': self.repo.active_branch.name,
-                'remote_branches': [ref.name for ref in self.repo.remote().refs],
-                'local_branches': [ref.name for ref in self.repo.heads],
+                'current_branch': 'master',  # 默认值
+                'local_branches': [],
+                'remote_branches': [],
             }
+            
+            # 安全获取当前分支
+            try:
+                status['current_branch'] = self.repo.active_branch.name
+            except Exception:
+                # 如果没有活动分支（如初始仓库），使用默认值
+                pass
+            
+            # 安全获取暂存区文件
+            try:
+                status['staged_files'] = [item.a_path for item in self.repo.index.diff("HEAD")]
+            except Exception:
+                # 如果没有HEAD（初始仓库），暂存区为空
+                status['staged_files'] = []
+            
+            # 安全获取本地分支
+            try:
+                status['local_branches'] = [ref.name for ref in self.repo.heads]
+            except Exception:
+                status['local_branches'] = []
+            
+            # 安全获取远程分支
+            try:
+                if self.repo.remotes:
+                    status['remote_branches'] = [ref.name for ref in self.repo.remotes[0].refs]
+                else:
+                    status['remote_branches'] = []
+            except Exception:
+                status['remote_branches'] = []
+            
+            return status
+            
         except Exception as e:
             print(f"获取状态失败: {e}")
             return {}
